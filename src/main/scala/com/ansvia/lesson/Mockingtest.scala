@@ -23,6 +23,7 @@ trait VoucherEngine {
 
     def isValid(user:User, code:String):Boolean
 
+    def onErrorCallback(code:String, errorInfo:String){}
 }
 
 trait EngineModule {
@@ -34,7 +35,7 @@ trait EngineModule {
 /**
  * Implementasi Engine menggunakan settingan dasar.
  */
-object BasicEngine extends EngineModule {
+trait BasicEngine extends EngineModule {
 
     // gunakan time provider bawaan asli
     override val timeProvider: TimeProvider = new TimeProvider {}
@@ -67,13 +68,21 @@ object BasicEngine extends EngineModule {
 
                     hashStr == (user.name.hashCode.toString + user.email.hashCode.toString) &&
                         (time + 864E+7) > timeProvider.currentTimeMillis
-                    
+
                 case _ =>
                     false
             }
         }
+
+        override def onErrorCallback(code: String, errorInfo: String){
+            super.onErrorCallback(code, errorInfo)
+
+        }
     }
 
-    override val voucher: VoucherEngine = new MyVoucherEngine(timeProvider)
+    override lazy val voucher: VoucherEngine = new MyVoucherEngine(timeProvider)
 }
+
+object Engine extends BasicEngine
+
 
